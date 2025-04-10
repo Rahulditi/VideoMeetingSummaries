@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import { db } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 
-
 import {
   doc,
   getDoc,
@@ -21,8 +20,8 @@ const startRecording = async (localStream, remoteStream) => {
   const mixedStream = new MediaStream();
   recordedChunks = [];
 
-  localStream.getAudioTracks().forEach(track => mixedStream.addTrack(track));
-  remoteStream.getAudioTracks().forEach(track => mixedStream.addTrack(track));
+  localStream.getAudioTracks().forEach((track) => mixedStream.addTrack(track));
+  remoteStream.getAudioTracks().forEach((track) => mixedStream.addTrack(track));
 
   mediaRecorder = new MediaRecorder(mixedStream);
 
@@ -35,28 +34,21 @@ const startRecording = async (localStream, remoteStream) => {
   mediaRecorder.start();
 };
 
-
-
-
-
 const servers = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
 const Room = () => {
   const { roomId } = useParams();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const [isRoomCreator, setIsRoomCreator] = useState(false);
-  const localVideo = useRef(null); 
+  const localVideo = useRef(null);
   const remoteVideo = useRef(null);
 
-  
   const peer = useRef(null);
 
-  
   useEffect(() => {
-   
-    const setupVideoChat = async() => {
+    const setupVideoChat = async () => {
       try {
         const localStream = await navigator.mediaDevices.getUserMedia({
           video: true,
@@ -86,7 +78,6 @@ const Room = () => {
         console.log(roomRef);
         const roomSnapshot = await getDoc(roomRef);
         console.log(roomSnapshot);
-        
 
         if (roomSnapshot.exists()) {
           console.log("Room exists! Joining existing room...");
@@ -98,16 +89,14 @@ const Room = () => {
         }
 
         setupIceCandidates(roomId);
-        if(localVideo.current.srcObject && remoteVideo.current.srcObject){
+        if (localVideo.current.srcObject && remoteVideo.current.srcObject) {
           startRecording(localStream, remoteStream);
         }
-
       } catch (error) {
         console.error("Error setting up video chat:", error);
       }
-    }
+    };
 
-  
     setupVideoChat();
 
     // Clean up when component unmounts
@@ -146,8 +135,7 @@ const Room = () => {
     }
   };
 
- 
-    const createRoom = async(roomRef) => {
+  const createRoom = async (roomRef) => {
     try {
       const offer = await peer.current.createOffer();
 
@@ -155,7 +143,8 @@ const Room = () => {
 
       await setDoc(roomRef, { offer }); // save offer in database
 
-      onSnapshot(roomRef,  (snapshot) => { // watches for any change in the room document
+      onSnapshot(roomRef, (snapshot) => {
+        // watches for any change in the room document
         const data = snapshot.data();
         if (data?.answer && !peer.current.currentRemoteDescription) {
           const answer = new RTCSessionDescription(data.answer);
@@ -165,14 +154,13 @@ const Room = () => {
     } catch (error) {
       console.error("Error creating room:", error);
     }
-  }
+  };
 
-   const joinRoom = async (roomRef) => {
+  const joinRoom = async (roomRef) => {
     try {
       const roomSnapshot = await getDoc(roomRef);
       const roomData = roomSnapshot.data();
 
-    
       if (roomData?.offer) {
         const offer = new RTCSessionDescription(roomData.offer);
         await peer.current.setRemoteDescription(offer);
@@ -186,7 +174,7 @@ const Room = () => {
       }
 
       const candidatesCollection = collection(roomRef, "candidates");
-      onSnapshot(candidatesCollection,  (snapshot) => {
+      onSnapshot(candidatesCollection, (snapshot) => {
         const changes = snapshot.docChanges();
         for (let i = 0; i < changes.length; i++) {
           const change = changes[i];
@@ -200,14 +188,14 @@ const Room = () => {
     } catch (error) {
       console.error("Error joining room:", error);
     }
-  }
+  };
 
   const setupIceCandidates = (roomId) => {
-    if (!peer.current){
-      return
+    if (!peer.current) {
+      return;
     }
 
-    peer.current.onicecandidate = async(event) => {
+    peer.current.onicecandidate = async (event) => {
       if (event.candidate) {
         try {
           const roomRef = doc(db, "rooms", roomId);
@@ -218,26 +206,28 @@ const Room = () => {
         }
       }
     };
-  }
+  };
 
   return (
     <div className="room-container">
-      <button onClick={handleEndMeeting}>End Meeting</button>
-
-      <h2>
-        {isRoomCreator ? "Room Created" : "Joined Room"}: {roomId}
-      </h2>
-
-      <div className="video-container">
-        <div className="video-box">
-          <h3>My Video</h3>
-          <video
-            ref={localVideo}
-            autoPlay
-            playsInline
-            muted
-            className="video-player"
-          />
+      <div className="room_head">
+        <button onClick={handleEndMeeting}>End Meeting</button>
+      </div>
+      <div className="room_body">
+        <div style={{ fontSize: "15px", marginBottom: "20px" }}>
+        <label style={{fontWeight:"bold",fontSize:"20px"}}>{isRoomCreator ? "Room Created" : "Joined Room"}</label>: {roomId}
+        </div>
+        <div className="video-container">
+          <div className="video-box">
+            <h3>My Video</h3>
+            <video
+              ref={localVideo}
+              autoPlay
+              playsInline
+              muted
+              className="video-player"
+            />
+          </div>
         </div>
 
         <div className="video-box">
@@ -252,6 +242,6 @@ const Room = () => {
       </div>
     </div>
   );
-}
+};
 
 export default Room;

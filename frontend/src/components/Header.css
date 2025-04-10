@@ -1,0 +1,34 @@
+.app-header {
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 4px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.logo-img {
+  height: 50px;
+  width: auto;
+}
+
+.user-icon {
+  background-color: #f1f1f1;
+  border-radius: 50%;
+  padding: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.user-icon:hover {
+  background-color: #e6e6e6;
+}

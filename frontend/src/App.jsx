@@ -6,6 +6,7 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
 import Room from './components/Room';
+import "./App.css"
 
 
 function App() {

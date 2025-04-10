@@ -1,0 +1,27 @@
+
+button {
+    background-color: #512da8;
+    color: #fff;
+    font-size: 12px;
+    padding: 10px 45px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-top: 10px;
+    cursor: pointer;
+  }
+
+
+  .room_head{
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+  }
+  .room_body{
+    background-color: #fff;
+  }
+  .room-container{
+    height: auto;
+  }
