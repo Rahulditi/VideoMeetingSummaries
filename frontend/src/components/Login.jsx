@@ -1,82 +1,72 @@
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import './Login.css';
-import './common.css';
-// import '@fortawesome/fontawesome-free/css/all.min.css';
-import Header from './Header';
+import React, { useState } from 'react'
+import { useAuth } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
+import './Login.css'
+
 const Login = () => {
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { logIn } = useAuth();
-  const navigate = useNavigate();
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const { logIn } = useAuth()
+  const navigate = useNavigate()
 
   const handleLogIn = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
+    setError("")
+
     try {
-      await logIn(email, password);
-      navigate("/dashboard");
-    } catch (err) {
-      alert(err.message);
+      await logIn(email, password)
+      navigate("/dashboard")
     }
-  };
+    catch (err) {
+      setError(err.message)
+    }
+  }
 
   return (
+    <div className="login-container">
+      <div className="login-card">
+        <h2>Login</h2>
 
-    <div className='login' >
+        {error && <p className="error">{error}</p>}
 
-      <div className={`container ${isSignUp ? "active" : ""}`} id="container">
-
-        <div className="form-container sign-up">
-          <form onSubmit={(e) => e.preventDefault()}>
-            <h1>Create Account</h1>
-            <input type="email" placeholder="Email" />
-            <input type="password" placeholder="Password" />
-            <button type="submit">Sign Up</button>
-          </form>
-        </div>
-
-        <div className="form-container sign-in">
-          <form onSubmit={handleLogIn}>
-            <h1>Sign In</h1>
+        <form onSubmit={handleLogIn}>
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
             <input
+              id="email"
               type="email"
-              placeholder="Email"
+              placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
             <input
+              id="password"
               type="password"
-              placeholder="Password"
+              placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            <a href="#">Forget Your Password?</a>
-            <button type="submit">Sign In</button>
-          </form>
-        </div>
-
-        <div className="toggle-container">
-          <div className="toggle">
-            <div className="toggle-panel toggle-left">
-              <h1>Welcome Back!!</h1>
-              <p>Enter your personal details to use all of site features</p>
-              <button className="hidden" onClick={() => setIsSignUp(false)}>Sign In</button>
-            </div>
-            <div className="toggle-panel toggle-right">
-              <h1>Hello, Friend!</h1>
-              <p>Register with your personal details to use all of site features</p>
-              <button className="hidden" onClick={() => setIsSignUp(true)}>Sign Up</button>
-            </div>
           </div>
+
+          <button type="submit" className="login-button">Login</button>
+        </form>
+
+        <div className="signup-section">
+          <h3>Not Registered?</h3>
+          <button onClick={() => navigate("/signup")} className="signup-button">
+            Sign Up
+          </button>
         </div>
       </div>
     </div>
+  )
+}
 
-  );
-};
-
-export default Login;
+export default Login

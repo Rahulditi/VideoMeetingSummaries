@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { db } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
+import './room.css'
 
 import {
   doc,
@@ -119,13 +120,27 @@ const Room = () => {
           const formData = new FormData();
           formData.append("audio", blob);
 
-          await fetch(`http://127.0.0.1:5000/upload?roomId=${roomId}`, {
+          const response = await fetch(`http://127.0.0.1:5000/upload?roomId=${roomId}`, {
             method: "POST",
             body: formData,
           });
 
+          const data = await response.json();
+          const { transcript, summary } = data;
+
+          console.log(data);
+          
+          
+          const roomRef = doc(db, "rooms", roomId);
+          await updateDoc(roomRef, {
+            transcript: transcript || "",
+            summary: summary || "",
+          });
+
+          console.log("Transcript and summary saved to Firestore!");
+
           navigate("/dashboard");
-        }, 1000);
+        }, 100);
       } else {
         navigate("/dashboard");
       }
@@ -138,7 +153,8 @@ const Room = () => {
   const createRoom = async (roomRef) => {
     try {
       const offer = await peer.current.createOffer();
-
+      console.log(offer);
+      
       await peer.current.setLocalDescription(offer);
 
       await setDoc(roomRef, { offer }); // save offer in database
@@ -210,24 +226,26 @@ const Room = () => {
 
   return (
     <div className="room-container">
-      <div className="room_head">
-        <button onClick={handleEndMeeting}>End Meeting</button>
-      </div>
-      <div className="room_body">
-        <div style={{ fontSize: "15px", marginBottom: "20px" }}>
-        <label style={{fontWeight:"bold",fontSize:"20px"}}>{isRoomCreator ? "Room Created" : "Joined Room"}</label>: {roomId}
+      <div className="room-header">
+        <div className="room-info">
+          <h2>{isRoomCreator ? "Room Created" : "Joined Room"}</h2>
+          <p>Room ID: <span>{roomId}</span></p>
         </div>
-        <div className="video-container">
-          <div className="video-box">
-            <h3>My Video</h3>
-            <video
-              ref={localVideo}
-              autoPlay
-              playsInline
-              muted
-              className="video-player"
-            />
-          </div>
+        <button className="end-meeting-button" onClick={handleEndMeeting}>
+          End Meeting
+        </button>
+      </div>
+
+      <div className="video-section">
+        <div className="video-box">
+          <h3>My Video</h3>
+          <video
+            ref={localVideo}
+            autoPlay
+            playsInline
+            muted
+            className="video-player"
+          />
         </div>
 
         <div className="video-box">
@@ -242,6 +260,7 @@ const Room = () => {
       </div>
     </div>
   );
+
 };
 
 export default Room;

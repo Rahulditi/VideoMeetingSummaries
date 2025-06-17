@@ -7,6 +7,7 @@ import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
 import Room from './components/Room';
 import "./App.css"
+import Summaries from "./components/Summaries"
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path="/login" element={<Login/>}/>
           <Route path="/signup" element={<Signup/>}/>
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard/></ProtectedRoute>}/>
+          <Route path="/summaries" element={<ProtectedRoute><Summaries /></ProtectedRoute>} />
           <Route path="/room/:roomId" element={<ProtectedRoute><Room /></ProtectedRoute>} />
         </Routes>
       </Router>

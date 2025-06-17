@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { db } from "../firebase/firebaseConfig";
-import { collection, addDoc } from "firebase/firestore";
+import { db, auth } from "../firebase/firebaseConfig";
+import { collection, addDoc, doc, updateDoc, arrayUnion, setDoc } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
-import Header from "./Header";
+import './Dashboard.css';
 
 const Dashboard = () => {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [showJoinInput, setShowJoinInput] = useState(false);
   const [roomId, setRoomId] = useState("");
   const { logOut } = useAuth();
   const navigate = useNavigate();
@@ -18,96 +18,87 @@ const Dashboard = () => {
   };
 
   const handleCreateRoom = async () => {
-    const newRoomId = uuidv4();
-    await addDoc(collection(db, "rooms"), { roomId: newRoomId });
-    alert(`Room Created! Room Id: ${newRoomId}`);
-    navigate(`/room/${newRoomId}`);
+    try {
+      const newRoomId = uuidv4();
+      const roomRef = await doc(db, "rooms", newRoomId);
+      alert(`Room Created! Room ID: ${newRoomId}`);
+
+      if (auth.currentUser) {
+        const userRef = doc(db, "users", auth.currentUser.email);
+        await updateDoc(userRef, {
+          roomIds: arrayUnion(newRoomId)
+        });
+      }
+
+      navigate(`/room/${newRoomId}`);
+    } catch (error) {
+      alert(`Error creating room: ${error.message}`);
+    }
   };
+
   const handleJoinRoom = async () => {
-    navigate(`/room/${roomId}`);
+    if (roomId.trim() === "") {
+      alert("Please enter a Room ID.");
+      return;
+    }
+
+    try {
+      if (auth.currentUser) {
+        const userRef = doc(db, "users", auth.currentUser.email);
+        await updateDoc(userRef, {
+          roomIds: arrayUnion(roomId)
+        });
+      }
+
+      navigate(`/room/${roomId}`);
+    } catch (error) {
+      alert(`Error joining room: ${error.message}`);
+    }
   };
 
   return (
-    <>
-      {/* <div> <Header/></div> */}
-      <div>
-        {/* <div>
-          <button onClick={handleCreateRoom}>Create Room</button>
-        </div> */}
-        {/* <div>
-          <input
-            type="text"
-            placeholder="Enter Room Id"
-            value={roomId}
-            onChange={(e) => {
-              setRoomId(e.target.value);
-            }}
-          />
-          <div>
-            <button onClick={handleJoinRoom}>Join Room</button>
+    <div className="dashboard-container">
+      <div className="dashboard-card">
+        <h2>Welcome to Dashboard</h2>
+
+        {!showJoinInput ? (
+          <div className="button-group">
+            <button className="main-button" onClick={handleCreateRoom}>
+              Create Room
+            </button>
+            <button className="main-button" onClick={() => setShowJoinInput(true)}>
+              Join Room
+            </button>
           </div>
-        </div> */}
-        <div className="logout-btn" style={{justifyContent:"right"}}>
-          <button onClick={handleLogout}>Logout</button>
-        </div>
-      </div>
-      <div className="login">
-        <div className={`container ${isSignUp ? "active" : ""}`} id="container">
-          <div className="form-container sign-up">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleJoinRoom();
-              }}
+        ) : (
+          <div className="join-form">
+            <input
+              type="text"
+              placeholder="Enter Room ID"
+              value={roomId}
+              onChange={(e) => setRoomId(e.target.value)}
+            />
+            <button className="main-button" onClick={handleJoinRoom}>
+              Join
+            </button>
+            <button
+              className="back-button"
+              onClick={() => setShowJoinInput(false)}
             >
-              <h1>Join Room</h1>
-              <input
-                type="text"
-                placeholder="Enter Room Id"
-                value={roomId}
-                onChange={(e) => {
-                  setRoomId(e.target.value);
-                }}
-              />
-
-              <button type="submit">Jooin</button>
-            </form>
+              Back
+            </button>
           </div>
+        )}
 
-          <div className="form-container sign-in">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleCreateRoom();
-              }}
-            >
-              <h1>Create Room</h1>
+        <button onClick={() => navigate("/summaries")} style={{ marginTop: "25px" }}>
+          View My Summaries
+        </button>
 
-              {/* <input type="password" placeholder="Password" /> */}
-              <button type="submit">Create</button>
-            </form>
-          </div>
-
-          <div className="toggle-container">
-            <div className="toggle">
-              <div className="toggle-panel toggle-left">
-                <h1>Create a Room?</h1>
-                {/* <p>Enter your personal details to use all of site features</p> */}
-                <button className="hidden" onClick={() => setIsSignUp(false)}>
-                  Create
-                </button>
-              </div>
-              <div className="toggle-panel toggle-right">
-                <h1>Already Have a Code ?</h1>
-                <button className="hidden" onClick={() => setIsSignUp(true)}>
-                  Join
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <button onClick={handleLogout} className="logout-button">
+          Logout
+        </button>
       </div>
-    </>
+    </div>
   );
 };
 
